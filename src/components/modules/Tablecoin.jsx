@@ -2,9 +2,10 @@ import { RotatingLines } from 'react-loader-spinner';
 import chartUp from '../../assets/chart-up.svg';
 import chartDown from '../../assets/chart-down.svg';
 import styles from './Tablecoin.module.css';
+import { marketChart } from '../../services/cryptoApi';
 
 //eslint-disable-next-line
-function TableCoin({ coins, isLoading }) {
+function TableCoin({ coins, isLoading, setChart }) {
     return (
         <div className={styles.container}>
             {isLoading ? <RotatingLines strokeColor='#3874ff' strokeWidth='2' /> : (
@@ -20,29 +21,8 @@ function TableCoin({ coins, isLoading }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {/* eslint-disable-next-line */}
                         {coins.map(coin =>
-                            <tr key={coin.id}>
-                                <td>
-                                    <div className={styles.symbol}>
-                                        <img src={coin.image} alt="" />
-                                        <span>{coin.symbol.toUpperCase()}</span>
-                                    </div>
-                                </td>
-                                <td>{coin.name}</td>
-                                <td>${coin.current_price.toLocaleString()}</td>
-                                <td
-                                    className={coin.price_change_percentage_24h > 0 ? styles.success : styles.error}>
-                                    {coin.price_change_percentage_24h.toFixed(2)}%
-                                </td>
-                                <td>{coin.total_volume.toLocaleString()}</td>
-                                <td>
-                                    <img
-                                        src={coin.price_change_percentage_24h > 0 ? chartUp : chartDown}
-                                        alt={coin.name}
-                                    />
-                                </td>
-                            </tr>
+                            <TableRow key={coin.id} coin={coin} setChart={setChart} />
                         )}
                     </tbody>
                 </table>
@@ -53,3 +33,50 @@ function TableCoin({ coins, isLoading }) {
 }
 
 export default TableCoin
+
+const TableRow = ({
+    coin,
+    setChart
+}) => {
+    const {
+        id,
+        symbol,
+        image,
+        current_price,
+        price_change_percentage_24h,
+        total_volume,
+        name
+    } = coin;
+    const showHandler = async () => {
+        try {
+            const res = await fetch(marketChart(id));
+            const json = await res.json();
+            setChart({ ...json, coin })
+        } catch (error) {
+            setChart(null)
+        }
+    }
+    return (
+        <tr key={id}>
+            <td>
+                <div className={styles.symbol} onClick={showHandler}>
+                    <img src={image} alt="" />
+                    <span>{symbol.toUpperCase()}</span>
+                </div>
+            </td>
+            <td>{name}</td>
+            <td>${current_price.toLocaleString()}</td>
+            <td
+                className={price_change_percentage_24h > 0 ? styles.success : styles.error}>
+                {price_change_percentage_24h.toFixed(2)}%
+            </td>
+            <td>{total_volume.toLocaleString()}</td>
+            <td>
+                <img
+                    src={price_change_percentage_24h > 0 ? chartUp : chartDown}
+                    alt={name}
+                />
+            </td>
+        </tr>
+    )
+}

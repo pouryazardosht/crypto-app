@@ -2,16 +2,15 @@ import { useEffect, useState } from "react"
 import { searchCoin } from "../../services/cryptoApi";
 import { RotatingLines } from "react-loader-spinner";
 
-import styles from './Search.module.css'
+import styles from './Search.module.css';
 
-//eslint-disable-next-line
+// eslint-disable-next-line
 function Search({ currency, setCurrency }) {
     const [text, setText] = useState("");
     const [coins, setCoins] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
-
         const controller = new AbortController();
         setCoins([])
         if (!text) {
